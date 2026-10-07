@@ -4,7 +4,7 @@ import { isAbsolute, join } from "node:path";
 
 export type GitPolicy = "off" | "commit" | "push";
 
-export interface LogbookConfig {
+export interface CaptainsLogConfig {
 	readonly vaultPath: string;
 	/** Vault-relative folder for `YYYY-MM-DD.md` daily logs. */
 	readonly dailyDir: string;
@@ -13,8 +13,8 @@ export interface LogbookConfig {
 	readonly git: GitPolicy;
 }
 
-export class LogbookConfigError extends Error {
-	override name = "LogbookConfigError";
+export class CaptainsLogConfigError extends Error {
+	override name = "CaptainsLogConfigError";
 }
 
 const GIT_POLICIES: Readonly<Record<GitPolicy, true>> = { off: true, commit: true, push: true };
@@ -31,43 +31,43 @@ function expandHome(path: string): string {
 function vaultFolder(env: Readonly<Record<string, string | undefined>>, variable: string, fallback: string): string {
 	const folder = env[variable]?.trim() || fallback;
 	if (isAbsolute(folder) || folder.split(/[\\/]/).includes("..")) {
-		throw new LogbookConfigError(`${variable} must be a path inside the vault, got "${folder}".`);
+		throw new CaptainsLogConfigError(`${variable} must be a path inside the vault, got "${folder}".`);
 	}
 	return folder;
 }
 
-export function loadConfig(env: Readonly<Record<string, string | undefined>> = process.env): LogbookConfig {
-	const rawVault = env.PI_LOGBOOK_VAULT?.trim();
+export function loadConfig(env: Readonly<Record<string, string | undefined>> = process.env): CaptainsLogConfig {
+	const rawVault = env.PI_CAPTAINS_LOG_VAULT?.trim();
 	if (!rawVault) {
-		throw new LogbookConfigError("PI_LOGBOOK_VAULT is not set. Point it at your notes vault directory.");
+		throw new CaptainsLogConfigError("PI_CAPTAINS_LOG_VAULT is not set. Point it at your notes vault directory.");
 	}
 	const vaultPath = expandHome(rawVault);
 	if (!isAbsolute(vaultPath)) {
-		throw new LogbookConfigError(`PI_LOGBOOK_VAULT must be an absolute path or start with ~/, got "${rawVault}".`);
+		throw new CaptainsLogConfigError(`PI_CAPTAINS_LOG_VAULT must be an absolute path or start with ~/, got "${rawVault}".`);
 	}
 	let isDirectory: boolean;
 	try {
 		isDirectory = statSync(vaultPath).isDirectory();
 	} catch (error) {
-		throw new LogbookConfigError(`Logbook vault not found: ${vaultPath}`, { cause: error });
+		throw new CaptainsLogConfigError(`Vault not found: ${vaultPath}`, { cause: error });
 	}
 	if (!isDirectory) {
-		throw new LogbookConfigError(`Logbook vault is not a directory: ${vaultPath}`);
+		throw new CaptainsLogConfigError(`Vault is not a directory: ${vaultPath}`);
 	}
 
-	const dailyDir = vaultFolder(env, "PI_LOGBOOK_DAILY_DIR", "Daily Log");
-	const researchDir = vaultFolder(env, "PI_LOGBOOK_RESEARCH_DIR", "Research");
+	const dailyDir = vaultFolder(env, "PI_CAPTAINS_LOG_DAILY_DIR", "Daily Log");
+	const researchDir = vaultFolder(env, "PI_CAPTAINS_LOG_RESEARCH_DIR", "Research");
 
-	const git = env.PI_LOGBOOK_GIT?.trim() || "commit";
+	const git = env.PI_CAPTAINS_LOG_GIT?.trim() || "commit";
 	if (!isGitPolicy(git)) {
-		throw new LogbookConfigError(`PI_LOGBOOK_GIT must be one of off, commit, push; got "${git}".`);
+		throw new CaptainsLogConfigError(`PI_CAPTAINS_LOG_GIT must be one of off, commit, push; got "${git}".`);
 	}
 
 	return { vaultPath, dailyDir, researchDir, git };
 }
 
-/** Creates the logbook's folders inside an existing vault; folders that already exist are left alone. */
-export function ensureVaultFolders(config: LogbookConfig): void {
+/** Creates the log's folders inside an existing vault; folders that already exist are left alone. */
+export function ensureVaultFolders(config: CaptainsLogConfig): void {
 	for (const folder of [config.dailyDir, config.researchDir]) {
 		mkdirSync(join(config.vaultPath, folder), { recursive: true });
 	}

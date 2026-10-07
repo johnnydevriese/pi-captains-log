@@ -1,13 +1,13 @@
 ---
-name: logbook
+name: captains-log
 description: Keep the user's engineering logbook in their Markdown notes vault - a dated daily log of work done plus research notes for findings worth keeping - and search it later. Use when asked to log work, save progress, write up findings, or answer "when/what/why did I ..." about past work.
 ---
 
-# Logbook
+# Captain's log
 
 The vault is the user's notes, not yours. You add to it carefully, the way a colleague would add to a shared lab notebook: concise, exact and append-only.
 
-The vault path comes from the request (the `/log` command passes it) or from the `PI_LOGBOOK_VAULT` environment variable. If neither is available, ask for it; never guess a directory.
+The vault path comes from the request (the `/log` command passes it) or from the `PI_CAPTAINS_LOG_VAULT` environment variable. If neither is available, ask for it; never guess a directory.
 
 ## Layout
 
@@ -50,7 +50,7 @@ Put it in the research folder, unless the vault already has a folder for that pr
 ## Rules
 
 1. **Search before writing.** Look for an existing note on the same ticket, PR or topic; update it instead of creating a duplicate. Search narrowly (ticket ID, repo, exact phrase), never by reading the whole vault.
-2. **Fit the vault.** Use its existing folders, filename style, link style and frontmatter conventions. Beyond the two logbook folders, do not impose a folder layout.
+2. **Fit the vault.** Use its existing folders, filename style, link style and frontmatter conventions. Beyond the two log folders, do not impose a folder layout.
 3. **Append, don't rewrite history.** Add dated sections to living notes; leave earlier text intact even when it is now wrong, and note the correction instead.
 4. **Only what happened.** Record commands that actually ran and results actually observed. Mark anything inferred as inferred. Never invent numbers.
 5. **No secrets.** Never write tokens, passwords, keys or connection strings. Refer to the secret's name or location instead.

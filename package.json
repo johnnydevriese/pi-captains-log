@@ -1,13 +1,13 @@
 {
-	"name": "pi-logbook",
+	"name": "pi-captains-log",
 	"version": "0.1.0",
-	"description": "An engineering logbook for pi and oh-my-pi: prompts at real stopping points (push, PR, release) and writes dated daily-log entries and research notes into your Markdown vault.",
+	"description": "A captain's log for your coding agent: prompts at real stopping points (push, PR, release) and writes dated daily-log entries and research notes into your Markdown vault.",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/johnnydevriese/pi-logbook.git"
+		"url": "git+https://github.com/johnnydevriese/pi-captains-log.git"
 	},
-	"homepage": "https://github.com/johnnydevriese/pi-logbook#readme",
-	"bugs": "https://github.com/johnnydevriese/pi-logbook/issues",
+	"homepage": "https://github.com/johnnydevriese/pi-captains-log#readme",
+	"bugs": "https://github.com/johnnydevriese/pi-captains-log/issues",
 	"author": "Johnny Devriese",
 	"type": "module",
 	"license": "MIT",
@@ -28,7 +28,7 @@
 	],
 	"pi": {
 		"extensions": [
-			"./extensions/logbook/index.ts"
+			"./extensions/captains-log/index.ts"
 		],
 		"skills": [
 			"./skills"

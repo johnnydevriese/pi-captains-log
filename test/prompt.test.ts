@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type { LogbookConfig } from "../src/config.ts";
+import type { CaptainsLogConfig } from "../src/config.ts";
 import { buildLogPrompt, dailyLogPath } from "../src/prompt.ts";
 
-const config: LogbookConfig = { vaultPath: "/vault", dailyDir: "Daily Log", researchDir: "Research", git: "push" };
+const config: CaptainsLogConfig = { vaultPath: "/vault", dailyDir: "Daily Log", researchDir: "Research", git: "push" };
 
 describe("dailyLogPath", () => {
 	it("files late-night work under the local calendar day, not the UTC day", () => {
@@ -30,7 +30,7 @@ describe("buildLogPrompt", () => {
 	});
 
 	it("asks for a push only under the push policy", () => {
-		const prompt = (git: LogbookConfig["git"]) => buildLogPrompt({ config: { ...config, git }, milestones: [], note: "", now });
+		const prompt = (git: CaptainsLogConfig["git"]) => buildLogPrompt({ config: { ...config, git }, milestones: [], note: "", now });
 		assert.match(prompt("push"), /then push/);
 		assert.doesNotMatch(prompt("commit"), /then push/);
 		assert.doesNotMatch(prompt("off"), /commit only/);

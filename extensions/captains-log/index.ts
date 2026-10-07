@@ -1,14 +1,14 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { ensureVaultFolders, type LogbookConfig, LogbookConfigError, loadConfig } from "../../src/config.ts";
+import { ensureVaultFolders, type CaptainsLogConfig, CaptainsLogConfigError, loadConfig } from "../../src/config.ts";
 import { describeMilestone, detectMilestones, type Milestone, mergeMilestones, milestoneKey } from "../../src/milestones.ts";
 import { buildLogPrompt } from "../../src/prompt.ts";
 
-const STATUS_KEY = "logbook";
-const SAVE = "Save to logbook";
-const LATER = "Not now (/log saves later)";
+const STATUS_KEY = "captains-log";
+const RECORD = "Make it so";
+const LATER = "Not now (/log records later)";
 
-export default function logbook(pi: ExtensionAPI): void {
-	// Milestones since the last logbook entry, and the keys already offered so each one prompts once.
+export default function captainsLog(pi: ExtensionAPI): void {
+	// Milestones since the last log entry, and the keys already offered so each one prompts once.
 	let pending: readonly Milestone[] = [];
 	let offered: ReadonlySet<string> = new Set();
 	// True while the agent is writing an entry: its own vault commit/push must not become a new milestone.
@@ -21,12 +21,12 @@ export default function logbook(pi: ExtensionAPI): void {
 	};
 
 	const requestEntry = (ctx: ExtensionContext, note: string): void => {
-		let config: LogbookConfig;
+		let config: CaptainsLogConfig;
 		try {
 			config = loadConfig();
 			ensureVaultFolders(config);
 		} catch (error) {
-			if (!(error instanceof LogbookConfigError)) throw error;
+			if (!(error instanceof CaptainsLogConfigError)) throw error;
 			ctx.ui.notify(error.message, "error");
 			return;
 		}
@@ -62,20 +62,21 @@ export default function logbook(pi: ExtensionAPI): void {
 		const fresh = pending.filter((milestone) => !offered.has(milestoneKey(milestone)));
 		if (fresh.length === 0) return;
 		offered = new Set([...offered, ...fresh.map(milestoneKey)]);
-		ctx.ui.setStatus(STATUS_KEY, `logbook: ${pending.length} unsaved (/log)`);
+		ctx.ui.setStatus(STATUS_KEY, `captain's log: ${pending.length} unrecorded (/log)`);
 		if (!ctx.hasUI) return;
 
 		// Not awaited: a dialog can outlive the host's event-handler budget. A detached promise must never
 		// reject unhandled, because that can take down the host process.
 		const summary = fresh.map(describeMilestone).join("\n");
+		const count = fresh.length === 1 ? "1 milestone" : `${fresh.length} milestones`;
 		ctx.ui
-			.select(`Stopping point reached:\n${summary}`, [SAVE, LATER])
+			.select(`Captain's log: ${count} since the last entry. Record now?\n${summary}`, [RECORD, LATER])
 			.then((choice) => {
-				if (choice === SAVE) requestEntry(ctx, "");
+				if (choice === RECORD) requestEntry(ctx, "");
 			})
 			.catch((error: unknown) => {
 				try {
-					ctx.ui.notify(`Logbook prompt failed: ${error instanceof Error ? error.message : String(error)}`, "error");
+					ctx.ui.notify(`Captain's log prompt failed: ${error instanceof Error ? error.message : String(error)}`, "error");
 				} catch {
 					// The session was reloaded or replaced while the dialog was open; there is nowhere left to report to.
 				}
@@ -83,7 +84,7 @@ export default function logbook(pi: ExtensionAPI): void {
 	});
 
 	pi.registerCommand("log", {
-		description: "Write a logbook entry for this session (optional note)",
+		description: "Record a captain's log entry for this session (optional note)",
 		handler: async (args, ctx) => requestEntry(ctx, args),
 	});
 }
