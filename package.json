@@ -1,0 +1,45 @@
+{
+	"name": "pi-logbook",
+	"version": "0.1.0",
+	"description": "An engineering logbook for pi and oh-my-pi: prompts at real stopping points (push, PR, release) and writes dated daily-log entries and research notes into your Markdown vault.",
+	"type": "module",
+	"license": "MIT",
+	"keywords": [
+		"pi-package",
+		"pi",
+		"oh-my-pi",
+		"obsidian",
+		"logbook",
+		"notes"
+	],
+	"files": [
+		"extensions",
+		"src",
+		"skills",
+		"README.md",
+		"LICENSE"
+	],
+	"pi": {
+		"extensions": [
+			"./extensions/logbook/index.ts"
+		],
+		"skills": [
+			"./skills"
+		]
+	},
+	"scripts": {
+		"check": "tsc",
+		"test": "node --test test/*.test.ts"
+	},
+	"engines": {
+		"node": ">=22.18"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-coding-agent": "*"
+	},
+	"devDependencies": {
+		"@earendil-works/pi-coding-agent": "^1.0.4",
+		"@types/node": "^26.6.4",
+		"typescript": "^7.0.2"
+	}
+}

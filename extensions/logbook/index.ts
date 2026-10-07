@@ -1,0 +1,74 @@
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { type LogbookConfig, LogbookConfigError, loadConfig } from "../../src/config.ts";
+import { describeMilestone, detectMilestones, type Milestone, mergeMilestones, milestoneKey } from "../../src/milestones.ts";
+import { buildLogPrompt } from "../../src/prompt.ts";
+
+const STATUS_KEY = "logbook";
+const SAVE = "Save to logbook";
+const LATER = "Not now (/log saves later)";
+
+export default function logbook(pi: ExtensionAPI): void {
+	// Milestones since the last logbook entry, and the keys already offered so each one prompts once.
+	let pending: readonly Milestone[] = [];
+	let offered: ReadonlySet<string> = new Set();
+
+	const reset = (ctx: ExtensionContext): void => {
+		pending = [];
+		offered = new Set();
+		ctx.ui.setStatus(STATUS_KEY, undefined);
+	};
+
+	const requestEntry = (ctx: ExtensionContext, note: string): void => {
+		let config: LogbookConfig;
+		try {
+			config = loadConfig();
+		} catch (error) {
+			if (!(error instanceof LogbookConfigError)) throw error;
+			ctx.ui.notify(error.message, "error");
+			return;
+		}
+
+		const prompt = buildLogPrompt({ config, milestones: pending, note, now: new Date() });
+		pi.sendUserMessage(prompt, ctx.isIdle() ? undefined : { deliverAs: "followUp" });
+		reset(ctx);
+	};
+
+	pi.on("session_start", (_event, ctx) => reset(ctx));
+
+	pi.on("tool_result", (event, ctx) => {
+		if (event.toolName !== "bash" || typeof event.input.command !== "string") return;
+		const output = event.content.flatMap((part) => (part.type === "text" ? [part.text] : [])).join("\n");
+		const found = detectMilestones({
+			command: event.input.command,
+			output,
+			isError: event.isError,
+			cwd: typeof event.input.cwd === "string" ? event.input.cwd : ctx.cwd,
+		});
+		pending = mergeMilestones(pending, found);
+	});
+
+	pi.on("agent_end", (_event, ctx) => {
+		const fresh = pending.filter((milestone) => !offered.has(milestoneKey(milestone)));
+		if (fresh.length === 0) return;
+		offered = new Set([...offered, ...fresh.map(milestoneKey)]);
+		ctx.ui.setStatus(STATUS_KEY, `logbook: ${pending.length} unsaved (/log)`);
+		if (!ctx.hasUI) return;
+
+		// Not awaited: a dialog can outlive the host's event-handler budget. Errors are reported, never thrown
+		// from a detached promise, because an unhandled rejection can take down the host process.
+		const summary = fresh.map(describeMilestone).join("\n");
+		ctx.ui
+			.select(`Stopping point reached:\n${summary}`, [SAVE, LATER])
+			.then((choice) => {
+				if (choice === SAVE) requestEntry(ctx, "");
+			})
+			.catch((error: unknown) => {
+				ctx.ui.notify(`Logbook prompt failed: ${error instanceof Error ? error.message : String(error)}`, "error");
+			});
+	});
+
+	pi.registerCommand("log", {
+		description: "Write a logbook entry for this session (optional note)",
+		handler: async (args, ctx) => requestEntry(ctx, args),
+	});
+}
