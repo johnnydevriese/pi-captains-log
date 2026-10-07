@@ -1,6 +1,6 @@
 {
 	"name": "pi-captains-log",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "A captain's log for your coding agent: prompts at real stopping points (push, PR, release) and writes dated daily-log entries and research notes into your Markdown vault.",
 	"repository": {
 		"type": "git",
