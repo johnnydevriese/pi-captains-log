@@ -25,7 +25,7 @@ export function localDate(now: Date): string {
 }
 
 export function dailyLogPath(config: CaptainsLogConfig, now: Date): string {
-	return join(config.vaultPath, config.dailyDir, `${localDate(now)}.md`);
+	return join(config.vaultPath, config.folders.daily, `${localDate(now)}.md`);
 }
 
 export function buildLogPrompt(request: LogRequest): string {
@@ -41,7 +41,8 @@ export function buildLogPrompt(request: LogRequest): string {
 		"",
 		`Vault: ${config.vaultPath}`,
 		`Daily log: ${dailyLogPath(config, now)} (append under a \`## ${pad(now.getHours())}:${pad(now.getMinutes())}\` heading; create the file if missing)`,
-		`Research notes: ${join(config.vaultPath, config.researchDir)} (unless a note on the same topic already exists elsewhere in the vault)`,
+		"Vault folders (the skill says what goes where):",
+		...Object.entries(config.folders).map(([role, folder]) => `- ${role}: ${folder}/`),
 		"",
 		"Milestones detected since the last log entry:",
 		...milestoneLines,

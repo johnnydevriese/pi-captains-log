@@ -3,7 +3,19 @@ import { describe, it } from "node:test";
 import type { CaptainsLogConfig } from "../src/config.ts";
 import { buildLogPrompt, dailyLogPath } from "../src/prompt.ts";
 
-const config: CaptainsLogConfig = { vaultPath: "/vault", dailyDir: "Daily Log", researchDir: "Research", git: "push" };
+const config: CaptainsLogConfig = {
+	vaultPath: "/vault",
+	folders: {
+		inbox: "Inbox",
+		daily: "Daily Log",
+		projects: "Projects",
+		research: "Research",
+		meetings: "Meetings",
+		career: "Career",
+		archive: "Archive",
+	},
+	git: "push",
+};
 
 describe("dailyLogPath", () => {
 	it("files late-night work under the local calendar day, not the UTC day", () => {

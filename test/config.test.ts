@@ -7,14 +7,42 @@ import { ensureVaultFolders, CaptainsLogConfigError, loadConfig } from "../src/c
 
 const vault = mkdtempSync(join(tmpdir(), "pi-captains-log-vault-"));
 
+const freshVault = (...folders: string[]): string => {
+	const path = mkdtempSync(join(tmpdir(), "pi-captains-log-vault-"));
+	for (const folder of folders) mkdirSync(join(path, folder), { recursive: true });
+	return path;
+};
+
 describe("loadConfig", () => {
-	it("defaults the folders and git policy", () => {
+	it("defaults to the numbered layout and commit policy for an empty vault", () => {
 		assert.deepEqual(loadConfig({ PI_CAPTAINS_LOG_VAULT: vault }), {
 			vaultPath: vault,
-			dailyDir: "Daily Log",
-			researchDir: "Research",
+			folders: {
+				inbox: "00 Inbox",
+				daily: "05 Daily Log",
+				projects: "10 Projects",
+				research: "20 Research",
+				meetings: "30 Meetings",
+				career: "40 Career",
+				archive: "90 Archive",
+			},
 			git: "commit",
 		});
+	});
+
+	it("adopts the vault's existing folders, ignoring number prefixes and case", () => {
+		const existing = freshVault("Projects", "2 - research", "Daily Notes", ".obsidian");
+		const { folders } = loadConfig({ PI_CAPTAINS_LOG_VAULT: existing });
+		assert.equal(folders.projects, "Projects");
+		assert.equal(folders.research, "2 - research");
+		assert.equal(folders.daily, "Daily Notes");
+		assert.equal(folders.meetings, "30 Meetings");
+	});
+
+	it("lets an environment variable pin a folder over an existing match", () => {
+		const existing = freshVault("Projects");
+		const { folders } = loadConfig({ PI_CAPTAINS_LOG_VAULT: existing, PI_CAPTAINS_LOG_PROJECTS_DIR: "Work/Projects" });
+		assert.equal(folders.projects, "Work/Projects");
 	});
 
 	it("expands ~ to the home directory", () => {
@@ -43,16 +71,23 @@ describe("loadConfig", () => {
 });
 
 describe("ensureVaultFolders", () => {
-	it("creates missing nested folders and keeps existing notes", () => {
-		const fresh = mkdtempSync(join(tmpdir(), "pi-captains-log-fresh-"));
-		mkdirSync(join(fresh, "Research"));
-		writeFileSync(join(fresh, "Research", "existing.md"), "# kept\n");
-		const config = loadConfig({ PI_CAPTAINS_LOG_VAULT: fresh, PI_CAPTAINS_LOG_DAILY_DIR: "05 Logs/Daily" });
+	it("creates the missing layout and keeps existing folders and notes", () => {
+		const existing = freshVault("Research");
+		writeFileSync(join(existing, "Research", "existing.md"), "# kept\n");
+		const config = loadConfig({ PI_CAPTAINS_LOG_VAULT: existing });
 
 		ensureVaultFolders(config);
 		ensureVaultFolders(config);
 
-		assert.ok(existsSync(join(fresh, "05 Logs", "Daily")));
-		assert.deepEqual(readdirSync(join(fresh, "Research")), ["existing.md"]);
+		assert.deepEqual(readdirSync(existing).toSorted(), [
+			"00 Inbox",
+			"05 Daily Log",
+			"10 Projects",
+			"30 Meetings",
+			"40 Career",
+			"90 Archive",
+			"Research",
+		]);
+		assert.deepEqual(readdirSync(join(existing, "Research")), ["existing.md"]);
 	});
 });

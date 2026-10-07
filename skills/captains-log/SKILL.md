@@ -11,17 +11,34 @@ The vault path comes from the request (the `/log` command passes it) or from the
 
 ## Layout
 
-The extension creates two folders inside the vault before each entry (names are configurable; the request gives the actual paths):
+Before each entry the extension makes sure the vault has these folders. It reuses a folder the vault already has for a role (`Projects/` and `10 Projects/` both count), and the request lists the actual names, so use those, not the defaults below:
 
 ```text
 <vault>/
-├── Daily Log/      one file per day: YYYY-MM-DD.md
-└── Research/       research notes that don't belong to an existing topic folder
+├── 00 Inbox/        anything that doesn't fit elsewhere yet
+├── 05 Daily Log/    one file per day: YYYY-MM-DD.md
+├── 10 Projects/     one subfolder per active project: <project>/
+├── 20 Research/     findings not tied to one project
+├── 30 Meetings/     YYYY-MM-DD <topic>.md
+├── 40 Career/       accomplishments and reviews; written only on request
+└── 90 Archive/      finished projects; moved only on request
 ```
 
-Everything else in the vault is the user's. Templates for both note types are in this skill's `templates/` directory: [daily-log.md](templates/daily-log.md) and [research-note.md](templates/research-note.md). Follow their shape; drop placeholder lines that don't apply rather than filling them with filler.
+Templates are in this skill's `templates/` directory: [daily-log.md](templates/daily-log.md), [research-note.md](templates/research-note.md), [meeting-note.md](templates/meeting-note.md). Follow their shape; drop placeholder lines that don't apply rather than filling them with filler.
 
-## Two kinds of notes
+### What goes where
+
+| Note | Folder |
+|---|---|
+| Today's work log | daily: `YYYY-MM-DD.md`, appended |
+| Evidence from work on a project (eval, benchmark, incident, design decision) | projects: `<project>/YYYY-MM-DD <topic>.md`; create the project subfolder if it's new |
+| Evidence not tied to one project (a library comparison, a how-it-works deep dive) | research |
+| Notes from a meeting the user describes or pastes | meetings |
+| A win worth remembering at review time | career, append to `YYYY accomplishments.md`, **only when the user asks** ("add this to my brag doc") |
+| A project that is finished | archive: move its folder **only when the user asks** |
+| Anything else | inbox |
+
+## Kinds of notes
 
 ### Daily log
 
@@ -45,12 +62,16 @@ Each entry is a few bullets a reader can scan in ten seconds, years from now:
 
 Write one when the work produced evidence worth more than a bullet: measurements, comparisons, a debugging chain, a decision and its reasons, exact commands and results. One note per question, named so it is findable: `YYYY-MM-DD <topic>.md` for a dated snapshot, or a stable topic name for a living note.
 
-Put it in the research folder, unless the vault already has a folder for that project or topic; then put it there. Use the research-note template: conclusion first, then setup, results (tables for numbers), what changed because of it, and open items. Link back to the daily log day.
+File it by the table above. Use the research-note template: conclusion first, then setup, results (tables for numbers), what changed because of it, and open items. Link back to the daily log day.
+
+### Meeting notes
+
+Only from what the user gives you: their notes, a transcript, or a summary they dictate. Never invent attendees or decisions. Use the meeting-note template and link the meeting from that day's daily log.
 
 ## Rules
 
 1. **Search before writing.** Look for an existing note on the same ticket, PR or topic; update it instead of creating a duplicate. Search narrowly (ticket ID, repo, exact phrase), never by reading the whole vault.
-2. **Fit the vault.** Use its existing folders, filename style, link style and frontmatter conventions. Beyond the two log folders, do not impose a folder layout.
+2. **Fit the vault.** Use its existing subfolders, filename style, link style and frontmatter conventions. Never rename or reorganize existing notes.
 3. **Append, don't rewrite history.** Add dated sections to living notes; leave earlier text intact even when it is now wrong, and note the correction instead.
 4. **Only what happened.** Record commands that actually ran and results actually observed. Mark anything inferred as inferred. Never invent numbers.
 5. **No secrets.** Never write tokens, passwords, keys or connection strings. Refer to the secret's name or location instead.
