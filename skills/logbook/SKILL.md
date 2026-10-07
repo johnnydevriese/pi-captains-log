@@ -9,6 +9,18 @@ The vault is the user's notes, not yours. You add to it carefully, the way a col
 
 The vault path comes from the request (the `/log` command passes it) or from the `PI_LOGBOOK_VAULT` environment variable. If neither is available, ask for it; never guess a directory.
 
+## Layout
+
+The extension creates two folders inside the vault before each entry (names are configurable; the request gives the actual paths):
+
+```text
+<vault>/
+├── Daily Log/      one file per day: YYYY-MM-DD.md
+└── Research/       research notes that don't belong to an existing topic folder
+```
+
+Everything else in the vault is the user's. Templates for both note types are in this skill's `templates/` directory: [daily-log.md](templates/daily-log.md) and [research-note.md](templates/research-note.md). Follow their shape; drop placeholder lines that don't apply rather than filling them with filler.
+
 ## Two kinds of notes
 
 ### Daily log
@@ -33,12 +45,12 @@ Each entry is a few bullets a reader can scan in ten seconds, years from now:
 
 Write one when the work produced evidence worth more than a bullet: measurements, comparisons, a debugging chain, a decision and its reasons, exact commands and results. One note per question, named so it is findable: `YYYY-MM-DD <topic>.md` for a dated snapshot, or a stable topic name for a living note.
 
-Structure: the conclusion first, then setup, results (tables for numbers), what changed because of it, and open items. Link back to the daily log day.
+Put it in the research folder, unless the vault already has a folder for that project or topic; then put it there. Use the research-note template: conclusion first, then setup, results (tables for numbers), what changed because of it, and open items. Link back to the daily log day.
 
 ## Rules
 
 1. **Search before writing.** Look for an existing note on the same ticket, PR or topic; update it instead of creating a duplicate. Search narrowly (ticket ID, repo, exact phrase), never by reading the whole vault.
-2. **Fit the vault.** Use its existing folders, filename style, link style and frontmatter conventions. Do not impose a folder layout. If no folder fits, use the inbox folder if one exists, otherwise the vault root.
+2. **Fit the vault.** Use its existing folders, filename style, link style and frontmatter conventions. Beyond the two logbook folders, do not impose a folder layout.
 3. **Append, don't rewrite history.** Add dated sections to living notes; leave earlier text intact even when it is now wrong, and note the correction instead.
 4. **Only what happened.** Record commands that actually ran and results actually observed. Mark anything inferred as inferred. Never invent numbers.
 5. **No secrets.** Never write tokens, passwords, keys or connection strings. Refer to the secret's name or location instead.

@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import type { LogbookConfig } from "../src/config.ts";
 import { buildLogPrompt, dailyLogPath } from "../src/prompt.ts";
 
-const config: LogbookConfig = { vaultPath: "/vault", dailyDir: "Daily Log", git: "push" };
+const config: LogbookConfig = { vaultPath: "/vault", dailyDir: "Daily Log", researchDir: "Research", git: "push" };
 
 describe("dailyLogPath", () => {
 	it("files late-night work under the local calendar day, not the UTC day", () => {

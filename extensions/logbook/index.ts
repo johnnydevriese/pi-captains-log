@@ -1,5 +1,5 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { type LogbookConfig, LogbookConfigError, loadConfig } from "../../src/config.ts";
+import { ensureVaultFolders, type LogbookConfig, LogbookConfigError, loadConfig } from "../../src/config.ts";
 import { describeMilestone, detectMilestones, type Milestone, mergeMilestones, milestoneKey } from "../../src/milestones.ts";
 import { buildLogPrompt } from "../../src/prompt.ts";
 
@@ -24,6 +24,7 @@ export default function logbook(pi: ExtensionAPI): void {
 		let config: LogbookConfig;
 		try {
 			config = loadConfig();
+			ensureVaultFolders(config);
 		} catch (error) {
 			if (!(error instanceof LogbookConfigError)) throw error;
 			ctx.ui.notify(error.message, "error");

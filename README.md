@@ -9,10 +9,11 @@ Lots of good engineers keep a daily log of what they worked on, so years later t
 - **Notices stopping points.** A successful `git push`, `gh pr create`, `gh pr merge` or `gh release create` counts as a milestone. Failed commands don't, including a rejected push hidden behind `| tail`.
 - **Asks once.** When the agent finishes its turn, you get one prompt listing the new milestones: save now or later. It doesn't ask again for the same milestone.
 - **`/log [note]`** writes an entry at any time, with an optional note in your own words.
-- **Writes two kinds of notes**, following the bundled `logbook` skill:
+- **Writes two kinds of notes**, following the bundled `logbook` skill and its templates:
   - a **daily log** (`Daily Log/YYYY-MM-DD.md`), appended under a time heading: short bullets with repo, ticket, PR links, outcome and what's still open;
-  - a **research note** when the work produced evidence worth keeping (measurements, decisions, exact identifiers), linked from the day's entry.
-- **Fits your vault.** It searches before writing, uses your existing folders and link style, appends instead of rewriting, and never writes secrets.
+  - a **research note** (`Research/`) when the work produced evidence worth keeping (measurements, decisions, exact identifiers), linked from the day's entry.
+- **Sets up its folders.** The first save creates `Daily Log/` and `Research/` in your vault if they don't exist. Nothing else in the vault is touched.
+- **Fits your vault.** It searches before writing, files research next to an existing project folder when there is one, appends instead of rewriting, and never writes secrets.
 - **Answers questions later.** "When did I bump the Textract tier?" Ask the agent; the skill tells it to search the logbook and cite the note.
 
 ## Install
@@ -35,7 +36,27 @@ omp -e ./pi-logbook
 |---|---|---|
 | `PI_LOGBOOK_VAULT` | (required) | Absolute path to your notes vault; `~/` is expanded |
 | `PI_LOGBOOK_DAILY_DIR` | `Daily Log` | Folder for daily logs, inside the vault |
+| `PI_LOGBOOK_RESEARCH_DIR` | `Research` | Folder for research notes, inside the vault |
 | `PI_LOGBOOK_GIT` | `commit` | `off`, `commit` (commit changed notes) or `push` (commit and push) |
+
+## Layout
+
+```text
+pi-logbook/
+├── extensions/logbook/index.ts      stopping-point detection, prompt, /log
+├── src/                              milestone rules, config, request builder
+├── skills/logbook/
+│   ├── SKILL.md                      how to write and search the logbook
+│   └── templates/                    daily-log.md, research-note.md
+└── test/
+```
+
+```text
+your-vault/
+├── Daily Log/2026-10-07.md
+├── Research/2026-10-07 importer benchmark.md
+└── ...everything else stays yours
+```
 
 ## How it works
 

@@ -41,6 +41,7 @@ export function buildLogPrompt(request: LogRequest): string {
 		"",
 		`Vault: ${config.vaultPath}`,
 		`Daily log: ${dailyLogPath(config, now)} (append under a \`## ${pad(now.getHours())}:${pad(now.getMinutes())}\` heading; create the file if missing)`,
+		`Research notes: ${join(config.vaultPath, config.researchDir)} (unless a note on the same topic already exists elsewhere in the vault)`,
 		"",
 		"Milestones detected since the last logbook entry:",
 		...milestoneLines,
