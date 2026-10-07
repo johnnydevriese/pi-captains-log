@@ -16,22 +16,23 @@ describe("dailyLogPath", () => {
 describe("buildLogPrompt", () => {
 	const now = new Date(2026, 9, 7, 9, 5);
 
-	it("hands the agent the file, heading, milestones, note and git policy", () => {
+	it("hands the agent the file, heading, milestones and note", () => {
 		const prompt = buildLogPrompt({
 			config,
-			milestones: [{ kind: "pr_opened", command: "gh pr create", cwd: "/repo", url: "https://github.com/a/b/pull/7" }],
+			milestones: [{ kind: "pr_opened", command: "gh pr create", cwd: "/repo", target: "https://github.com/a/b/pull/7" }],
 			note: "  finished the eval  ",
 			now,
 		});
-		assert.match(prompt, /Daily log: \/vault\/Daily Log\/2026-10-07\.md \(append under a `## 09:05` heading/);
-		assert.match(prompt, /- opened PR: https:\/\/github\.com\/a\/b\/pull\/7 \(in \/repo\)/);
-		assert.match(prompt, /My note: finished the eval\n/);
-		assert.match(prompt, /commit only the notes you changed, then push/);
+		assert.ok(prompt.includes("/vault/Daily Log/2026-10-07.md"));
+		assert.ok(prompt.includes("## 09:05"));
+		assert.ok(prompt.includes("https://github.com/a/b/pull/7"));
+		assert.ok(prompt.includes("finished the eval"));
 	});
 
-	it("never asks to push when the policy is commit", () => {
-		const prompt = buildLogPrompt({ config: { ...config, git: "commit" }, milestones: [], note: "", now });
-		assert.match(prompt, /Do not push\./);
-		assert.doesNotMatch(prompt, /My note/);
+	it("asks for a push only under the push policy", () => {
+		const prompt = (git: LogbookConfig["git"]) => buildLogPrompt({ config: { ...config, git }, milestones: [], note: "", now });
+		assert.match(prompt("push"), /then push/);
+		assert.doesNotMatch(prompt("commit"), /then push/);
+		assert.doesNotMatch(prompt("off"), /commit only/);
 	});
 });

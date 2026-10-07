@@ -11,6 +11,8 @@ export default function logbook(pi: ExtensionAPI): void {
 	// Milestones since the last logbook entry, and the keys already offered so each one prompts once.
 	let pending: readonly Milestone[] = [];
 	let offered: ReadonlySet<string> = new Set();
+	// True while the agent is writing an entry: its own vault commit/push must not become a new milestone.
+	let writingEntry = false;
 
 	const reset = (ctx: ExtensionContext): void => {
 		pending = [];
@@ -31,12 +33,16 @@ export default function logbook(pi: ExtensionAPI): void {
 		const prompt = buildLogPrompt({ config, milestones: pending, note, now: new Date() });
 		pi.sendUserMessage(prompt, ctx.isIdle() ? undefined : { deliverAs: "followUp" });
 		reset(ctx);
+		writingEntry = true;
 	};
 
-	pi.on("session_start", (_event, ctx) => reset(ctx));
+	pi.on("session_start", (_event, ctx) => {
+		reset(ctx);
+		writingEntry = false;
+	});
 
 	pi.on("tool_result", (event, ctx) => {
-		if (event.toolName !== "bash" || typeof event.input.command !== "string") return;
+		if (writingEntry || event.toolName !== "bash" || typeof event.input.command !== "string") return;
 		const output = event.content.flatMap((part) => (part.type === "text" ? [part.text] : [])).join("\n");
 		const found = detectMilestones({
 			command: event.input.command,
@@ -48,14 +54,18 @@ export default function logbook(pi: ExtensionAPI): void {
 	});
 
 	pi.on("agent_end", (_event, ctx) => {
+		if (writingEntry) {
+			writingEntry = false;
+			return;
+		}
 		const fresh = pending.filter((milestone) => !offered.has(milestoneKey(milestone)));
 		if (fresh.length === 0) return;
 		offered = new Set([...offered, ...fresh.map(milestoneKey)]);
 		ctx.ui.setStatus(STATUS_KEY, `logbook: ${pending.length} unsaved (/log)`);
 		if (!ctx.hasUI) return;
 
-		// Not awaited: a dialog can outlive the host's event-handler budget. Errors are reported, never thrown
-		// from a detached promise, because an unhandled rejection can take down the host process.
+		// Not awaited: a dialog can outlive the host's event-handler budget. A detached promise must never
+		// reject unhandled, because that can take down the host process.
 		const summary = fresh.map(describeMilestone).join("\n");
 		ctx.ui
 			.select(`Stopping point reached:\n${summary}`, [SAVE, LATER])
@@ -63,7 +73,11 @@ export default function logbook(pi: ExtensionAPI): void {
 				if (choice === SAVE) requestEntry(ctx, "");
 			})
 			.catch((error: unknown) => {
-				ctx.ui.notify(`Logbook prompt failed: ${error instanceof Error ? error.message : String(error)}`, "error");
+				try {
+					ctx.ui.notify(`Logbook prompt failed: ${error instanceof Error ? error.message : String(error)}`, "error");
+				} catch {
+					// The session was reloaded or replaced while the dialog was open; there is nowhere left to report to.
+				}
 			});
 	});
 

@@ -19,9 +19,9 @@ Each entry is a few bullets a reader can scan in ten seconds, years from now:
 
 ```markdown
 ## 14:32
-- **fq-ai-core, SM-2041:** fixed garbled-font detection and Textract box clamping; pushed 3 commits to PR #17 (https://github.com/org/repo/pull/17).
-- Live eval on 9 leases: 7.5 pages/s at concurrency 24, $3.10 total. Details: [[2026-10-07 routed PDF OCR live lease eval]].
-- Open: prod Textract quota unknown (no access).
+- **acme/widgets, PROJ-123:** fixed the CSV importer dropping quoted commas; pushed 3 commits to PR #42 (https://github.com/acme/widgets/pull/42).
+- Benchmarked the importer on the 2 GB sample: 41 s → 12 s. Details: [[2026-03-14 importer benchmark]].
+- Open: staging rollout waits on the schema migration (PROJ-130).
 ```
 
 - Lead with the repo/project and the ticket, then what changed and the outcome.
