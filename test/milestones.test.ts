@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { type BashOutcome, detectMilestones, type Milestone, mergeMilestones } from "../src/milestones.ts";
+import {
+	type BashOutcome,
+	detectMilestones,
+	type Milestone,
+	mergeMilestones,
+	milestoneKey,
+	milestonesToOffer,
+} from "../src/milestones.ts";
 
 const bash = (overrides: Partial<BashOutcome>): BashOutcome => ({
 	command: "",
@@ -80,5 +87,30 @@ describe("mergeMilestones", () => {
 		const pushA: Milestone = { kind: "push", command: "git push", cwd: "/a" };
 		const pushB: Milestone = { kind: "push", command: "git push", cwd: "/b" };
 		assert.deepEqual(mergeMilestones([pushA], [pushB, pushA]), [pushA, pushB]);
+	});
+});
+
+describe("milestonesToOffer", () => {
+	const push: Milestone = { kind: "push", command: "git push", cwd: "/a", target: "aaaaaaa..bbbbbbb feat -> feat" };
+	const fixPush: Milestone = { ...push, target: "bbbbbbb..ccccccc feat -> feat" };
+	const pr: Milestone = { kind: "pr_opened", command: "gh pr create", cwd: "/a", target: "https://github.com/a/b/pull/1" };
+	const merge: Milestone = { kind: "pr_merged", command: "gh pr merge 1", cwd: "/a" };
+
+	it("holds back pushes until a stopping point", () => {
+		assert.deepEqual(milestonesToOffer([push, fixPush], new Set()), []);
+	});
+
+	it("offers the waiting pushes together with the PR that ends them", () => {
+		assert.deepEqual(milestonesToOffer([push, pr], new Set()), [push, pr]);
+	});
+
+	it("does not re-prompt for fix-up pushes after the PR was offered", () => {
+		const offered = new Set([push, pr].map(milestoneKey));
+		assert.deepEqual(milestonesToOffer([push, pr, fixPush], offered), []);
+	});
+
+	it("offers only what is new when the PR is later merged", () => {
+		const offered = new Set([push, pr].map(milestoneKey));
+		assert.deepEqual(milestonesToOffer([push, pr, fixPush, merge], offered), [fixPush, merge]);
 	});
 });

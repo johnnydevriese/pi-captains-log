@@ -1,11 +1,18 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { ensureVaultFolders, type CaptainsLogConfig, CaptainsLogConfigError, loadConfig } from "../../src/config.ts";
-import { describeMilestone, detectMilestones, type Milestone, mergeMilestones, milestoneKey } from "../../src/milestones.ts";
+import {
+	describeMilestone,
+	detectMilestones,
+	type Milestone,
+	mergeMilestones,
+	milestoneKey,
+	milestonesToOffer,
+} from "../../src/milestones.ts";
 import { buildLogPrompt } from "../../src/prompt.ts";
 
-const STATUS_KEY = "captains-log";
 const RECORD = "Make it so";
-const LATER = "Not now (/log records later)";
+const LATER = "Not now";
+const MUTE = "Stop asking this session (/log still works)";
 
 export default function captainsLog(pi: ExtensionAPI): void {
 	// Milestones since the last log entry, and the keys already offered so each one prompts once.
@@ -13,11 +20,12 @@ export default function captainsLog(pi: ExtensionAPI): void {
 	let offered: ReadonlySet<string> = new Set();
 	// True while the agent is writing an entry: its own vault commit/push must not become a new milestone.
 	let writingEntry = false;
+	// Set by "Stop asking this session"; /log still works.
+	let muted = false;
 
-	const reset = (ctx: ExtensionContext): void => {
+	const reset = (): void => {
 		pending = [];
 		offered = new Set();
-		ctx.ui.setStatus(STATUS_KEY, undefined);
 	};
 
 	const requestEntry = (ctx: ExtensionContext, note: string): void => {
@@ -33,13 +41,14 @@ export default function captainsLog(pi: ExtensionAPI): void {
 
 		const prompt = buildLogPrompt({ config, milestones: pending, note, now: new Date() });
 		pi.sendUserMessage(prompt, ctx.isIdle() ? undefined : { deliverAs: "followUp" });
-		reset(ctx);
+		reset();
 		writingEntry = true;
 	};
 
-	pi.on("session_start", (_event, ctx) => {
-		reset(ctx);
+	pi.on("session_start", () => {
+		reset();
 		writingEntry = false;
+		muted = false;
 	});
 
 	pi.on("tool_result", (event, ctx) => {
@@ -59,20 +68,20 @@ export default function captainsLog(pi: ExtensionAPI): void {
 			writingEntry = false;
 			return;
 		}
-		const fresh = pending.filter((milestone) => !offered.has(milestoneKey(milestone)));
+		if (muted || !ctx.hasUI) return;
+		const fresh = milestonesToOffer(pending, offered);
 		if (fresh.length === 0) return;
 		offered = new Set([...offered, ...fresh.map(milestoneKey)]);
-		ctx.ui.setStatus(STATUS_KEY, `captain's log: ${pending.length} unrecorded (/log)`);
-		if (!ctx.hasUI) return;
 
 		// Not awaited: a dialog can outlive the host's event-handler budget. A detached promise must never
 		// reject unhandled, because that can take down the host process.
 		const summary = fresh.map(describeMilestone).join("\n");
 		const count = fresh.length === 1 ? "1 milestone" : `${fresh.length} milestones`;
 		ctx.ui
-			.select(`Captain's log: ${count} since the last entry. Record now?\n${summary}`, [RECORD, LATER])
+			.select(`Captain's log: ${count} since the last entry. Record now?\n${summary}`, [RECORD, LATER, MUTE])
 			.then((choice) => {
 				if (choice === RECORD) requestEntry(ctx, "");
+				if (choice === MUTE) muted = true;
 			})
 			.catch((error: unknown) => {
 				try {

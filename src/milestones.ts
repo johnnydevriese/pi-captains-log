@@ -119,6 +119,23 @@ export function mergeMilestones(existing: readonly Milestone[], found: readonly 
 	return fresh.length === 0 ? existing : [...existing, ...fresh];
 }
 
+// A push is usually mid-task (fixes to an open PR, a branch backup); it rides along in the next entry instead of prompting.
+const STOPPING_POINTS: Readonly<Record<MilestoneKind, boolean>> = {
+	push: false,
+	pr_opened: true,
+	pr_merged: true,
+	release: true,
+};
+
+/**
+ * Milestones to show in a prompt: every not-yet-offered milestone, but only when at least one of them is a stopping
+ * point. Otherwise none, and the pushes wait for the next PR, merge, release or `/log`.
+ */
+export function milestonesToOffer(pending: readonly Milestone[], offered: ReadonlySet<string>): readonly Milestone[] {
+	const fresh = pending.filter((milestone) => !offered.has(milestoneKey(milestone)));
+	return fresh.some((milestone) => STOPPING_POINTS[milestone.kind]) ? fresh : [];
+}
+
 const KIND_LABELS: Readonly<Record<MilestoneKind, string>> = {
 	push: "pushed",
 	pr_opened: "opened PR",

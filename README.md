@@ -6,8 +6,8 @@ Lots of good engineers keep a daily log of what they worked on, so years later t
 
 ## What it does
 
-- **Notices stopping points.** A successful `git push`, `gh pr create`, `gh pr merge` or `gh release create` counts as a milestone. Failed commands don't, including a rejected push hidden behind `| tail`.
-- **Asks once.** When the agent finishes its turn, you get one prompt listing the new milestones: *Make it so*, or record later with `/log`. It doesn't ask again for the same milestone.
+- **Notices stopping points.** Opening a PR (`gh pr create`), merging one (`gh pr merge`) or publishing a release (`gh release create`) is a stopping point. Successful `git push`es are collected quietly and go into the next entry; they don't prompt on their own, so fix-up pushes to an open PR stay silent. Failed or no-op commands count for nothing, including a rejected push hidden behind `| tail`.
+- **Asks once, and you can shush it.** When the agent finishes a turn after a stopping point, you get one prompt: *Make it so*, *Not now*, or *Stop asking this session*. No status-bar counter; `/log` always works.
 - **`/log [note]`** writes an entry at any time, with an optional note in your own words.
 - **Writes notes where they belong**, following the bundled `captains-log` skill and its templates:
   - a **daily log** (`05 Daily Log/YYYY-MM-DD.md`), appended under a time heading: short bullets with repo, ticket, PR links, outcome and what's still open;
