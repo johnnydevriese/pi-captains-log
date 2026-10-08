@@ -1,23 +1,30 @@
 # {{Topic}} ({{YYYY-MM-DD}})
 
-Status: {{Exploring | Verified | Decided | Superseded by [[...]]}}
-Related: {{tickets, PRs, repos}} · Logged: [[{{YYYY-MM-DD}}]]
+Status: {{Exploring | Blocked on ... | Decided | Done | Superseded by [[...]]}}
+Related: {{tickets, PRs, repos, notes}} · Logged: [[{{YYYY-MM-DD}}]]
 
 ## Bottom line
-{{The answer or decision in two or three sentences, with the key number.}}
+{{Where things stand and the answer or decision in two or three sentences, with the key number or identifier.}}
 
-## Setup
-{{What was tested or investigated, on what data or environment, and how. Exact commands that ran.}}
+## Goal
+{{What the session set out to do or learn, and the constraints that shaped it.}}
 
-## Results
+## How it works
+{{The explanation or mental model reached, written out well enough to reason about it again without rereading the sources. Add links to files, functions, docs and URLs as supporting references.}}
+
+## Decisions
+- {{Chosen: what, and why.}}
+- {{Ruled out: what, and why it was dropped.}}
+
+## Evidence
 | {{Case}} | {{Metric}} | {{Metric}} |
 |---|---|---|
 | {{...}} | {{...}} | {{...}} |
 
-{{Observations the table does not show. Mark inferences as inferred.}}
+- {{Observed: commands whose exact form matters, errors, results, PRs, commits, run IDs.}}
+- {{Unverified: hypotheses and inferences, marked as such.}}
+- {{Context gap: parts of the session not visible when this was written.}}
 
-## What changed because of it
-- {{Code, config or plan changes, with commit or PR links.}}
-
-## Open
-- {{Unanswered questions and the first concrete next step.}}
+## Resume here
+- {{The first concrete next action.}}
+- {{Open questions.}}
