@@ -8,12 +8,16 @@ Lots of good engineers keep a log of what they worked on, so weeks or years late
 
 - **Notices stopping points.** Opening a PR (`gh pr create`), merging one (`gh pr merge`) or publishing a release (`gh release create`) is a stopping point. Successful `git push`es are collected quietly and go into the next entry; they don't prompt on their own, so fix-up pushes to an open PR stay silent. Failed or no-op commands count for nothing, including a rejected push hidden behind `| tail`.
 - **Asks once, and you can shush it.** When the agent finishes a turn after a stopping point, you get one prompt: *Make it so*, *Not now*, or *Stop asking this session*. No status-bar counter; `/log` always works.
-- **`/log [note]`** writes an entry at any time, with an optional note in your own words. Asking the agent to "write this up" uses the same skill.
-- **Writes a session note you can resume from**, following the bundled `captains-log` skill and its templates. It distills the conversation rather than transcribing it or listing commands: bottom line and current status, the original goal and constraints, the explanation you arrived at, decisions with the paths ruled out, evidence kept apart from hypotheses, and the next concrete step. Research-only sessions count; detected pushes and PRs are just references. If part of the session isn't visible to the agent, the note says so instead of guessing.
-- **Keeps a daily log** (`05 Daily Log/YYYY-MM-DD.md`), appended under a time heading: a short outcome, what's still open, and a link to the session note.
+- **`/log [note]`** writes or updates a vault note at any time, with an optional note in your own words. Asking the agent to "write this up" or "put this in my vault" uses the same skill.
+- **Writes one living session note you can resume from**, following the bundled `captains-log` skill and its templates. It distills the conversation rather than transcribing it or listing commands:
+  1. What you were trying to accomplish, and under what constraints
+  2. What you changed, decided, or discovered — and why (including alternatives ruled out and why they failed)
+  3. What you actually verified (measurements, commands/queries, PRs, commits, run IDs), kept strictly separate from `[INFERENCE]` or unverified assumptions
+  4. What is unfinished or next, with the concrete first step when resuming
+- **Evolves notes across sessions.** If the vault already has a note on the topic or ticket, it updates `Status:` and appends a `## Update YYYY-MM-DD` section (including a `Corrections to the plan above:` list when implementation disproved part of an earlier plan) instead of creating duplicate files or a noisy daily log feed.
 - **Meeting notes** from what you paste or dictate, and **career** wins when you ask ("add this to my brag doc").
-- **Sets up your vault.** Before each entry it makes sure the layout below exists. A vault that already has `Projects/` or `2 - Research/` keeps those; only missing folders are created, and no note is moved or renamed.
-- **Fits your vault.** It searches before writing, extends an existing note on the same topic with a dated section instead of rewriting it, files new notes in the folder where related notes already live (the inbox only when nothing fits), and never writes secrets.
+- **Sets up your vault.** Before each entry it makes sure the top-level layout below exists. A vault that already has `Projects/` or `2 - Research/` keeps those; only missing folders are created, and no note is moved or renamed.
+- **Fits your vault.** It searches before writing, files new notes inside the existing nested domain/topic subfolder where related notes already live (the inbox only when nothing fits), and never writes secrets.
 - **Answers questions later.** "When did we switch the importer to streaming, and why?" Ask the agent; the skill tells it to search the log and cite the note.
 
 ## Install
@@ -35,7 +39,7 @@ omp -e ./pi-captains-log
 | Variable | Default | Meaning |
 |---|---|---|
 | `PI_CAPTAINS_LOG_VAULT` | (required) | Absolute path to your notes vault; `~/` is expanded |
-| `PI_CAPTAINS_LOG_<ROLE>_DIR` | see layout | Pin a role's folder (`INBOX`, `DAILY`, `PROJECTS`, `RESEARCH`, `MEETINGS`, `CAREER`, `ARCHIVE`), e.g. `PI_CAPTAINS_LOG_DAILY_DIR="Journal"` |
+| `PI_CAPTAINS_LOG_<ROLE>_DIR` | see layout | Pin a role's folder (`INBOX`, `PROJECTS`, `RESEARCH`, `MEETINGS`, `CAREER`, `ARCHIVE`), e.g. `PI_CAPTAINS_LOG_PROJECTS_DIR="Work/Projects"` |
 | `PI_CAPTAINS_LOG_GIT` | `commit` | `off`, `commit` (commit changed notes) or `push` (commit and push) |
 
 ## Layout
@@ -45,15 +49,14 @@ pi-captains-log/
 ├── extensions/captains-log/index.ts   stopping-point detection, prompt, /log
 ├── src/                               milestone rules, vault layout, request builder
 ├── skills/captains-log/
-│   ├── SKILL.md                       session notes, what goes where, how to search the log
-│   └── templates/                     research-note.md (session note), daily-log.md, meeting-note.md
+│   ├── SKILL.md                       living session notes, what goes where, how to search the log
+│   └── templates/                     research-note.md (session note), meeting-note.md
 └── test/
 ```
 
 ```text
 your-vault/
 ├── 00 Inbox/        notes with no suitable home yet
-├── 05 Daily Log/    2026-10-07.md
 ├── 10 Projects/     widgets/CSV importer.md
 ├── 20 Research/     Postgres partial index planning.md
 ├── 30 Meetings/     2026-10-07 importer kickoff.md
@@ -61,7 +64,7 @@ your-vault/
 └── 90 Archive/      finished projects (moved only on request)
 ```
 
-Each role first looks for a folder you already have: the number prefix and case are ignored, and `Daily Notes` or `Journal` count as the daily log. The numbers only apply to folders it has to create, and they keep the layout in reading order in Obsidian's sidebar.
+Each role first looks for a folder you already have: the number prefix and case are ignored. The numbers only apply to folders it has to create, and they keep the layout in reading order in Obsidian's sidebar.
 
 ## How it works
 
@@ -70,7 +73,7 @@ flowchart LR
   A[bash tool result] -->|push / PR / release succeeded| B[pending milestones]
   B --> C{agent turn ends}
   C -->|new milestones| D[prompt: save or later]
-  D -->|save| E[agent writes session note + daily entry linking it]
+  D -->|save| E[agent writes or updates living session note]
   F["/log note"] --> E
 ```
 

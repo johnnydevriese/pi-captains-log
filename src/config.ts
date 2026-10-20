@@ -4,11 +4,11 @@ import { isAbsolute, join } from "node:path";
 
 export type GitPolicy = "off" | "commit" | "push";
 
-export type FolderRole = "inbox" | "daily" | "projects" | "research" | "meetings" | "career" | "archive";
+export type FolderRole = "inbox" | "projects" | "research" | "meetings" | "career" | "archive";
 
 export interface CaptainsLogConfig {
 	readonly vaultPath: string;
-	/** Vault-relative folder for each role, e.g. `{ daily: "05 Daily Log", ... }`. */
+	/** Vault-relative folder for each role, e.g. `{ projects: "10 Projects", ... }`. */
 	readonly folders: Readonly<Record<FolderRole, string>>;
 	readonly git: GitPolicy;
 }
@@ -35,7 +35,6 @@ interface FolderSpec {
 // Record order is the layout's display order.
 const FOLDER_SPECS: Readonly<Record<FolderRole, FolderSpec>> = {
 	inbox: { variable: "PI_CAPTAINS_LOG_INBOX_DIR", fallback: "00 Inbox", aliases: ["inbox"] },
-	daily: { variable: "PI_CAPTAINS_LOG_DAILY_DIR", fallback: "05 Daily Log", aliases: ["daily log", "daily notes", "daily", "journal"] },
 	projects: { variable: "PI_CAPTAINS_LOG_PROJECTS_DIR", fallback: "10 Projects", aliases: ["projects"] },
 	research: { variable: "PI_CAPTAINS_LOG_RESEARCH_DIR", fallback: "20 Research", aliases: ["research"] },
 	meetings: { variable: "PI_CAPTAINS_LOG_MEETINGS_DIR", fallback: "30 Meetings", aliases: ["meetings", "meeting notes"] },

@@ -1,6 +1,6 @@
 # {{YYYY-MM-DD}} {{Meeting topic}}
 
-Attendees: {{names, as given}} · Logged: [[{{YYYY-MM-DD}}]]
+Date: {{YYYY-MM-DD}} · Attendees: {{names, as given}}
 
 ## Decisions
 - {{What was decided, and by whom if it matters.}}

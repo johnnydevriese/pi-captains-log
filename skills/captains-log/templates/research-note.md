@@ -1,30 +1,38 @@
-# {{Topic}} ({{YYYY-MM-DD}})
+# {{Title}}
 
-Status: {{Exploring | Blocked on ... | Decided | Done | Superseded by [[...]]}}
-Related: {{tickets, PRs, repos, notes}} · Logged: [[{{YYYY-MM-DD}}]]
+Status: {{Proposed | In progress | Implemented | Verified | Blocked on ... | Superseded by [[...]]}}
+Date: {{YYYY-MM-DD}}
+Scope: {{systems, environments, or bounded question}}
+Repositories: {{owner/repo or local paths}}
+Tickets/PRs: {{exact ticket IDs, PR URLs, branches}}
+Related: {{[[related vault notes]]}}
 
-## Bottom line
-{{Where things stand and the answer or decision in two or three sentences, with the key number or identifier.}}
+## What happened
+{{2-5 sentences: the problem or goal, constraints, what was done or decided, and where things stand right now (with the key number or verdict).}}
 
-## Goal
-{{What the session set out to do or learn, and the constraints that shaped it.}}
+## Findings / evidence
+{{What was observed in code (`path/file.py::symbol`), logs, queries, or eval runs. Keep observations strictly separate from `[INFERENCE]` or unverified assumptions.}}
 
-## How it works
-{{The explanation or mental model reached, written out well enough to reason about it again without rereading the sources. Add links to files, functions, docs and URLs as supporting references.}}
-
-## Decisions
-- {{Chosen: what, and why.}}
-- {{Ruled out: what, and why it was dropped.}}
-
-## Evidence
-| {{Case}} | {{Metric}} | {{Metric}} |
+| {{Case / Metric}} | {{Observed}} | {{Notes}} |
 |---|---|---|
 | {{...}} | {{...}} | {{...}} |
 
-- {{Observed: commands whose exact form matters, errors, results, PRs, commits, run IDs.}}
-- {{Unverified: hypotheses and inferences, marked as such.}}
-- {{Context gap: parts of the session not visible when this was written.}}
+- {{Exact identifiers, commands, queries, PRs, commits, or run IDs worth keeping verbatim.}}
 
-## Resume here
-- {{The first concrete next action.}}
-- {{Open questions.}}
+## Decision / design
+{{What was chosen or built and why, explained well enough to reason about the problem cold without rereading the sources.}}
+
+### Alternatives ruled out
+| {{Option}} | {{Why rejected}} |
+|---|---|
+| {{...}} | {{Concrete reason it failed or was dropped so it is not retried.}} |
+
+## Open items
+- {{First concrete next action when resuming.}}
+- {{Remaining questions, external blockers, or unverified assumptions.}}
+
+## Update {{YYYY-MM-DD}}: {{milestone or direction change}}
+{{Append when updating an existing note in a later session. Leave earlier sections intact.}}
+
+Corrections to the plan above:
+- {{What changed when implementation or testing disagreed with the earlier plan, and why.}}

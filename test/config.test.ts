@@ -19,7 +19,6 @@ describe("loadConfig", () => {
 			vaultPath: vault,
 			folders: {
 				inbox: "00 Inbox",
-				daily: "05 Daily Log",
 				projects: "10 Projects",
 				research: "20 Research",
 				meetings: "30 Meetings",
@@ -31,12 +30,11 @@ describe("loadConfig", () => {
 	});
 
 	it("adopts the vault's existing folders, ignoring number prefixes and case", () => {
-		const existing = freshVault("Projects", "2 - research", "Daily Notes", ".obsidian");
+		const existing = freshVault("Projects", "2 - research", "Meeting Notes", ".obsidian");
 		const { folders } = loadConfig({ PI_CAPTAINS_LOG_VAULT: existing });
 		assert.equal(folders.projects, "Projects");
 		assert.equal(folders.research, "2 - research");
-		assert.equal(folders.daily, "Daily Notes");
-		assert.equal(folders.meetings, "30 Meetings");
+		assert.equal(folders.meetings, "Meeting Notes");
 	});
 
 	it("lets an environment variable pin a folder over an existing match", () => {
@@ -53,7 +51,7 @@ describe("loadConfig", () => {
 		["unset vault", {}, /PI_CAPTAINS_LOG_VAULT is not set/],
 		["relative vault", { PI_CAPTAINS_LOG_VAULT: "notes" }, /absolute path/],
 		["missing vault", { PI_CAPTAINS_LOG_VAULT: join(vault, "nope") }, /not found/],
-		["daily folder escaping the vault", { PI_CAPTAINS_LOG_VAULT: vault, PI_CAPTAINS_LOG_DAILY_DIR: "../elsewhere" }, /inside the vault/],
+		["projects folder escaping the vault", { PI_CAPTAINS_LOG_VAULT: vault, PI_CAPTAINS_LOG_PROJECTS_DIR: "../elsewhere" }, /inside the vault/],
 		["research folder outside the vault", { PI_CAPTAINS_LOG_VAULT: vault, PI_CAPTAINS_LOG_RESEARCH_DIR: "/tmp/notes" }, /inside the vault/],
 		["unknown git policy", { PI_CAPTAINS_LOG_VAULT: vault, PI_CAPTAINS_LOG_GIT: "force-push" }, /off, commit, push/],
 	];
@@ -81,7 +79,6 @@ describe("ensureVaultFolders", () => {
 
 		assert.deepEqual(readdirSync(existing).toSorted(), [
 			"00 Inbox",
-			"05 Daily Log",
 			"10 Projects",
 			"30 Meetings",
 			"40 Career",

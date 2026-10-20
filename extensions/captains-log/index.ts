@@ -93,7 +93,7 @@ export default function captainsLog(pi: ExtensionAPI): void {
 	});
 
 	pi.registerCommand("log", {
-		description: "Write up this session as a session note plus a daily log link (optional scope note)",
+		description: "Crystallize this session into a resumable vault note (optional scope note)",
 		handler: async (args, ctx) => requestEntry(ctx, args),
 	});
 }
